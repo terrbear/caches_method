@@ -36,6 +36,17 @@ end
 class CachedMethodRecord 
   include CachesMethod
 
+  def self.reset!
+    @@cache_num = 4
+  end
+
+  def self.cache_me_plz
+    @@cache_num ||= 4
+    @@cache_num += 1
+  end
+
+  def self.no_cache_plz; end;
+
   def id
     1
   end
@@ -81,15 +92,29 @@ class CachedMethodRecord
     @@count = 4
   end
 
+  caches_method :cache_me_plz, :expire_methods => [:no_cache_plz]
   caches_method :expensive_method, :expire_methods => [:blank_cache!, :blank_cache?, :blank_cache]
   caches_method :expensive_method_with_args, :expire_methods => [:reset_seed]
 end
 
 class CachesMethodTest < Test::Unit::TestCase
   def setup
+    CachedMethodRecord.reset!
     @record = CachedMethodRecord.new
     @record.reset!
     Rails.cache.reset!
+  end
+
+  def test_class_methods_cached
+    assert CachedMethodRecord.cache_me_plz == 5
+    assert CachedMethodRecord.cache_me_plz == 5
+  end
+
+  def test_class_methods_support_expiry
+    assert CachedMethodRecord.cache_me_plz == 5
+    assert CachedMethodRecord.cache_me_plz == 5
+    CachedMethodRecord.no_cache_plz 
+    assert CachedMethodRecord.cache_me_plz != 5
   end
 
   def test_expensive_method_is_cached
