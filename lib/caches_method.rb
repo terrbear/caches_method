@@ -21,10 +21,10 @@ module CachesMethod
 
       options.reverse_merge!(:ttl => 15.minutes, :expire_methods => [])
 
-      cache_key = "#{self.class.name}/#{self.id}/#{method}/"
       
       class_eval do
         define_method(sanitize_method_name("#{method}_with_cache")) do |*args|
+          cache_key = "#{self.class.name}/#{self.id}/#{method}/"
           Rails.cache.write(cache_key + "_index", (Rails.cache.read(cache_key + "_index") || []) + [cache_key + keyify(args)])
           Rails.cache.fetch(cache_key + keyify(args), 
                             :expires_in => options[:ttl]) do
@@ -42,6 +42,7 @@ module CachesMethod
       [options[:expire_methods]].flatten.each do |em|
         class_eval do
           define_method(sanitize_method_name("#{em}_with_expire")) do |*args|
+            cache_key = "#{self.class.name}/#{self.id}/#{method}/"
             (Rails.cache.read(cache_key + "_index") || []).each do |ck|
               Rails.cache.delete(ck)
             end
