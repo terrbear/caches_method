@@ -1,13 +1,30 @@
 CachesMethod
 ============
 
-Introduction goes here.
+This plugin lets you cache a method's execution for a specified period of time (defaults to 15) or until a method is called.
+
+Unfortunately, right now, you have to put the caches_method call *after* the related methods have been defined. If anyone has a suggestion how to alias a method before it's defined, it would be welcomed.
+
+The plugin was inspired by @bdainton, from this blog post:
+http://buddingrubyist.com/2008/10/14/alias_method_chaining-your-ar-associations-for-fun-and-profit/
 
 
 Example
 =======
 
-Example goes here.
+To use it:
+
+Class Foo < ActiveRecord::Base
+	def takeover_world
+		#REALLY INTENSIVE STUFF
+	end
+
+	def retreat
+		#not so intense
+	end
+	
+	caches_method :some_expensive_method, :expire_methods => [:retreat], :ttl => 2000.years
+end
 
 
-Copyright (c) 2008 [name of plugin creator], released under the MIT license
+Copyright (c) 2008 [Terry Heath], released under the MIT license
